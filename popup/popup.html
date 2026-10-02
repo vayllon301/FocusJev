@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FocusJev</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-box">
+          <img src="../icons/icon48.png" alt="FocusJev" class="logo-img" />
+        </div>
+        <div>
+          <h1 class="brand-title">FocusJev</h1>
+          <p class="brand-sub">AI Tab Enforcer &bull; Jev</p>
+        </div>
+      </div>
+      <div id="statusPill" class="status-pill idle">
+        <span class="pulse-dot"></span>
+        <span id="statusText">IDLE</span>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-btn active" data-tab="focusTab">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        Focus
+      </button>
+      <button class="nav-btn" data-tab="logTab">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Blocked (<span id="blockedBadge">0</span>)
+      </button>
+      <button class="nav-btn" data-tab="settingsTab">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        Settings
+      </button>
+    </nav>
+
+    <!-- TAB 1: FOCUS VIEW -->
+    <div id="focusTab" class="tab-content active">
+      <!-- API Key warning banner -->
+      <div id="missingKeyBanner" class="alert-box warning hidden">
+        <span>⚠️ OpenRouter API Key required to run Jev judgments.</span>
+        <button id="goToSettingsBtn" class="link-btn">Configure Key &rarr;</button>
+      </div>
+
+      <!-- INACTIVE STATE (Setup form) -->
+      <div id="setupView" class="view-panel">
+        <div class="form-group">
+          <label for="goalInput" class="form-label">
+            Focus Goal
+            <span class="label-hint">What are you working on?</span>
+          </label>
+          <div class="input-wrap">
+            <input 
+              type="text" 
+              id="goalInput" 
+              placeholder="e.g. Research AI security & red teaming" 
+              autocomplete="off"
+              maxlength="120"
+            />
+          </div>
+          <div class="goal-chips">
+            <span class="chip" data-chip="Research AI security">AI Security</span>
+            <span class="chip" data-chip="Code review & bug fixing">Debugging</span>
+            <span class="chip" data-chip="Reading technical papers">Paper Reading</span>
+            <span class="chip" data-chip="Writing documentation">Docs Writing</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Duration
+            <span class="label-hint">How long will you focus?</span>
+          </label>
+          <div class="duration-grid">
+            <button type="button" class="duration-pill" data-mins="15">15m</button>
+            <button type="button" class="duration-pill active" data-mins="25">25m</button>
+            <button type="button" class="duration-pill" data-mins="45">45m</button>
+            <button type="button" class="duration-pill" data-mins="60">60m</button>
+          </div>
+          <div class="custom-duration-row">
+            <span class="text-xs">Or custom:</span>
+            <input type="number" id="customMinutes" min="1" max="300" placeholder="mins" class="custom-input" />
+            <span class="text-xs text-muted">minutes</span>
+          </div>
+        </div>
+
+        <div class="enforcement-info">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>Tabs not related to your goal will be <strong>closed immediately</strong> by Jev.</span>
+        </div>
+
+        <button id="startSessionBtn" class="btn btn-primary btn-block">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Start Focus Session
+        </button>
+      </div>
+
+      <!-- ACTIVE STATE (Enforcement dashboard) -->
+      <div id="activeView" class="view-panel hidden">
+        <!-- Goal display card -->
+        <div class="active-goal-card">
+          <div class="active-goal-tag">CURRENT GOAL</div>
+          <div id="activeGoalDisplay" class="active-goal-text">Research AI security</div>
+        </div>
+
+        <!-- Timer Circle / Countdown -->
+        <div class="timer-container">
+          <div class="countdown-display" id="timeRemainingDisplay">25:00</div>
+          <div class="timer-sub">JEV ACTIVE ENFORCEMENT</div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number danger" id="activeBlockedCount">0</div>
+            <div class="stat-title">Tabs Closed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number success" id="activeAllowedCount">0</div>
+            <div class="stat-title">Tabs Allowed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number info" id="activeModelSlug">Jev-1.13</div>
+            <div class="stat-title">AI Judge</div>
+          </div>
+        </div>
+
+        <!-- Recent Interceptions Mini Feed -->
+        <div class="recent-feed-container">
+          <div class="feed-header">
+            <span>Recent Interceptions</span>
+            <span class="feed-count" id="feedCountText">0 blocked</span>
+          </div>
+          <div id="recentFeedList" class="feed-list">
+            <div class="feed-empty">No off-task tabs detected yet. You're locked in!</div>
+          </div>
+        </div>
+
+        <button id="stopSessionBtn" class="btn btn-danger btn-block">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+          End Session Early
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 2: INTERCEPTIONS LOG -->
+    <div id="logTab" class="tab-content">
+      <div class="log-controls">
+        <span class="text-xs text-muted">All tabs closed during focus sessions</span>
+        <button id="clearHistoryBtn" class="link-btn danger-link">Clear Log</button>
+      </div>
+      <div id="fullHistoryList" class="history-list">
+        <div class="feed-empty">No distractions blocked yet.</div>
+      </div>
+    </div>
+
+    <!-- TAB 3: SETTINGS VIEW -->
+    <div id="settingsTab" class="tab-content">
+      <div class="settings-form">
+        <!-- OpenRouter API Key -->
+        <div class="form-group">
+          <label class="form-label" for="apiKeyInput">
+            OpenRouter API Key
+            <span class="label-hint">Required for Jev</span>
+          </label>
+          <div class="input-password-wrap">
+            <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." autocomplete="off" />
+            <button type="button" id="toggleKeyVisibility" class="icon-toggle-btn" title="Show/Hide">👁️</button>
+          </div>
+          <div class="test-row">
+            <button type="button" id="testKeyBtn" class="btn btn-secondary btn-sm">Test Jev Connection</button>
+            <span id="testResult" class="test-result-text"></span>
+          </div>
+        </div>
+
+        <!-- Model Selection -->
+        <div class="form-group">
+          <label class="form-label" for="modelInput">
+            OpenRouter Model Slug
+            <span class="label-hint">Preset to Jev by TypeSafe</span>
+          </label>
+          <input type="text" id="modelInput" value="typesafe/jev-1.13" />
+          <p class="field-help">Default: <code>typesafe/jev-1.13</code> (ultra-fast calibrated decision model).</p>
+        </div>
+
+        <!-- Threshold Slider -->
+        <div class="form-group">
+          <label class="form-label">
+            Enforcer Strictness: <span id="thresholdLabel" class="highlight-text">Balanced (40%)</span>
+          </label>
+          <input type="range" id="thresholdSlider" min="15" max="75" step="5" value="40" class="slider" />
+          <div class="slider-ticks">
+            <span>Lenient (25%)</span>
+            <span>Balanced (40%)</span>
+            <span>Strict (60%)</span>
+          </div>
+          <p class="field-help">If Jev's relevance score is below this threshold, the tab is closed immediately.</p>
+        </div>
+
+        <!-- Checkbox Options -->
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="showNotificationsCheckbox" checked />
+            <span>Show desktop alert when tab is closed</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="closeExistingCheckbox" checked />
+            <span>Scan & close off-task tabs on session start</span>
+          </label>
+        </div>
+
+        <!-- Whitelist -->
+        <div class="form-group">
+          <label class="form-label" for="whitelistInput">
+            Always Allowed URLs / Keywords
+            <span class="label-hint">Comma separated</span>
+          </label>
+          <textarea id="whitelistInput" rows="2" placeholder="e.g. google.com/search, duckduckgo.com, github.com"></textarea>
+          <p class="field-help">Internal browser tabs and blank tabs are always allowed.</p>
+        </div>
+
+        <button id="saveSettingsBtn" class="btn btn-primary btn-block">Save Configuration</button>
+        <div id="saveFeedback" class="save-feedback hidden">✓ Settings saved successfully</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
